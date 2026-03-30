@@ -1,137 +1,79 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
-type AuthStep = 'login' | 'register' | 'register-complete'
-
-interface LoginViewProps {
-  onSuccess?: () => void
-}
-
-export function LoginView({ onSuccess }: LoginViewProps) {
-  const { login, register } = useAuth()
-  const [step, setStep] = useState<AuthStep>('login')
+const LoginView = () => {
+  const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   // Login form fields
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
 
-  // Register form fields
-  const [regUsername, setRegUsername] = useState('')
-  const [regPassword, setRegPassword] = useState('')
-  const [regPasswordConfirm, setRegPasswordConfirm] = useState('')
-  const [regFullName, setRegFullName] = useState('')
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
-    setLoading(true)
 
-    try {
-      if (!loginUsername.trim()) {
-        throw new Error('Username is required')
-      }
-      if (!loginPassword) {
-        throw new Error('Password is required')
-      }
-
-      await login(loginUsername, loginPassword)
-      setFeedback('Login successful!')
-      onSuccess?.()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
-    } finally {
-      setLoading(false)
+    // Client-side validation
+    if (!loginUsername.trim() || !loginPassword) {
+      setError('Please enter both username and password.')
+      return
     }
-  }
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
     setLoading(true)
 
     try {
-      if (!regUsername.trim()) {
-        throw new Error('Username is required')
-      }
-      if (!regFullName.trim()) {
-        throw new Error('Full name is required')
-      }
-      if (!regPassword) {
-        throw new Error('Password is required')
-      }
-      if (regPassword !== regPasswordConfirm) {
-        throw new Error('Passwords do not match')
-      }
-      if (regPassword.length < 6) {
-        throw new Error('Password must be at least 6 characters')
-      }
+      // We call the login function from AuthContext
+      const result = await login(loginUsername, loginPassword)
 
-      await register({
-        username: regUsername,
-        password: regPassword,
-        fullname: regFullName,
-      })
-
-      setFeedback('Registration successful! Welcome to the contest.')
-      setStep('register-complete')
-      setTimeout(() => {
-        onSuccess?.()
-      }, 1500)
+      if (result.success) {
+        // If successful, trigger the success callback
+        navigate('/home')
+      } else {
+        // If the API returned a failure (invalid creds, etc.), show the message
+        setError(result.message || 'Login failed. Please try again.')
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed')
+      // This catches network errors or unexpected crashes
+      setError('Could not connect to the contest server.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="auth-view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
-      <section className="auth-container" style={{ width: '100%', maxWidth: '400px' }}>
-        <header style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1>DOMjudge Contest Arena</h1>
-          <p style={{ color: '#666', margin: 0 }}>
-            {step === 'login' ? 'Sign in to your account' : 'Create a new account'}
+    <main className="min-h-screen flex flex-col items-center justify-center bg-primaryWhite p-6 font-sans">
+      <section className="w-full max-w-md bg-white border-4 border-primaryBlack shadow-[12px_12px_0px_0px_rgba(33,31,31,1)] overflow-hidden">
+        {/* Header Section */}
+        <header className="bg-primaryBlue py-10 px-6 text-center border-b-4 border-primaryBlack">
+          <h1 className="text-3xl font-black uppercase italic text-white tracking-tighter">
+            Contest <span className="text-primaryYellow">Arena</span>
+          </h1>
+          <p className="text-blue-100 mt-2 text-xs font-bold uppercase tracking-widest opacity-80">
+            Internal Authentication System
           </p>
         </header>
 
-        {error && (
-          <div
-            style={{
-              backgroundColor: '#fee',
-              color: '#c33',
-              padding: '1rem',
-              borderRadius: '4px',
-              marginBottom: '1rem',
-              fontSize: '0.9rem',
-            }}
-          >
-            {error}
-          </div>
-        )}
+        <div className="p-8">
+          {/* Error Alert Messaging */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 border-2 border-primaryBlack shadow-[4px_4px_0px_0px_rgba(220,38,38,1)] text-red-700 text-xs font-black uppercase">
+              <p className="flex items-center gap-2">
+                <span>⚠️</span> {error}
+              </p>
+            </div>
+          )}
 
-        {feedback && (
-          <div
-            style={{
-              backgroundColor: '#efe',
-              color: '#3c3',
-              padding: '1rem',
-              borderRadius: '4px',
-              marginBottom: '1rem',
-              fontSize: '0.9rem',
-            }}
-          >
-            {feedback}
-          </div>
-        )}
-
-        {step === 'login' && (
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label htmlFor="login-username" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Username
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="login-username"
+                className="block text-xs font-black uppercase text-primaryBlack tracking-widest"
+              >
+                Contestant Username
               </label>
               <input
                 id="login-username"
@@ -139,20 +81,17 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                 value={loginUsername}
                 onChange={(e) => setLoginUsername(e.target.value)}
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
+                placeholder="e.g. team01"
+                className="w-full px-4 py-3 rounded-none border-2 border-primaryBlack focus:bg-primaryYellowLight outline-none transition-all disabled:bg-gray-100 font-bold"
               />
             </div>
 
-            <div>
-              <label htmlFor="login-password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Password
+            <div className="space-y-2">
+              <label
+                htmlFor="login-password"
+                className="block text-xs font-black uppercase text-primaryBlack tracking-widest"
+              >
+                Access Password
               </label>
               <input
                 id="login-password"
@@ -160,181 +99,39 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-none border-2 border-primaryBlack focus:bg-primaryYellowLight outline-none transition-all disabled:bg-gray-100 font-bold"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              style={{
-                padding: '0.75rem',
-                backgroundColor: '#0066cc',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                opacity: loading ? 0.6 : 1,
-              }}
+              className={`w-full py-4 px-4 border-2 border-primaryBlack font-black uppercase tracking-[0.2em] text-sm transition-all transform active:translate-x-1 active:translate-y-1 active:shadow-none
+                ${loading
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-primaryBlue text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#0528cc]'
+                }`}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-3">
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  Verifying...
+                </span>
+              ) : 'Enter Arena'}
             </button>
-
-            <div style={{ textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('register')
-                  setError(null)
-                  setFeedback(null)
-                }}
-                style={{ background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', textDecoration: 'underline' }}
-              >
-                Sign up
-              </button>
-            </div>
           </form>
-        )}
 
-        {step === 'register' && (
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label htmlFor="reg-fullname" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Full Name
-              </label>
-              <input
-                id="reg-fullname"
-                type="text"
-                value={regFullName}
-                onChange={(e) => setRegFullName(e.target.value)}
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-username" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Username
-              </label>
-              <input
-                id="reg-username"
-                type="text"
-                value={regUsername}
-                onChange={(e) => setRegUsername(e.target.value)}
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Password
-              </label>
-              <input
-                id="reg-password"
-                type="password"
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-password-confirm" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Confirm Password
-              </label>
-              <input
-                id="reg-password-confirm"
-                type="password"
-                value={regPasswordConfirm}
-                onChange={(e) => setRegPasswordConfirm(e.target.value)}
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: '0.75rem',
-                backgroundColor: '#0066cc',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              {loading ? 'Creating account...' : 'Sign Up'}
-            </button>
-
-            <div style={{ textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('login')
-                  setError(null)
-                  setFeedback(null)
-                }}
-                style={{ background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', textDecoration: 'underline' }}
-              >
-                Sign in
-              </button>
-            </div>
-          </form>
-        )}
-
-        {step === 'register-complete' && (
-          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
-            <h2 style={{ margin: '0 0 1rem 0' }}>Welcome!</h2>
-            <p style={{ color: '#666' }}>Your account has been created successfully. Redirecting you to the contest...</p>
-          </div>
-        )}
+          <footer className="mt-10 text-center border-t-2 border-dashed border-gray-200 pt-6">
+            <p className="text-[10px] font-bold text-gray-400 uppercase leading-relaxed tracking-tight">
+              Authorized personnel only. <br />
+              All login attempts are logged by the system.
+            </p>
+          </footer>
+        </div>
       </section>
     </main>
   )
 }
+
+export default LoginView;
