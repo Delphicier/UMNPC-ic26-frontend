@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './middleware/ProtectedRoute'
@@ -6,6 +7,9 @@ import LoginView from './views/LoginView'
 import HomepageView from './views/HomepageView'
 import LeaderboardView from './views/LeaderboardView'
 import ProblemsetView from './views/ProblemsetView'
+import { loadAppConfig, type AppConfig } from './utils/config'
+import type { Contest, Scoreboard, Team, Problems } from './utils/types'
+import { requestJson } from './utils/utils'
 
 /*
 function AppContent() {
@@ -153,6 +157,40 @@ function AppContent() {
 */
 
 const App = () => {
+	const [appConfig, setAppConfig] = useState<AppConfig | null>(null)
+	const [Contest, setContest] = useState<Contest | null>(null)
+	const [Scoreboard, setScoreboard] = useState<Scoreboard | null>(null)
+	const [Teams, setTeams] = useState<Team[]>([])
+	const [Problems, setProblems] = useState<Problems>([])
+	const [error, setError] = useState<string | null>(null)
+	const [loading, setLoading] = useState(true)
+
+	useEffect(() => {
+		let timerInterval: number | null = null
+		const loadData = async () => {
+			const abortController = new AbortController()
+			try {
+				const config = appConfig || await loadAppConfig()
+				if (!appConfig)
+					setAppConfig(config)
+
+				const contest = requestJson<Contest>(config, `/contests/${config.contestId}`, abortController.signal)
+				const
+
+			} catch (error) {
+				setError(error instanceof Error ? error.message : 'API Error');
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		loadData()
+		timerInterval = window.setInterval(loadData, 15000)
+		return () => {
+			if (timerInterval) clearInterval(timerInterval)
+		}
+	}, [appConfig])
+
 	return (
 		<AuthProvider>
 			<BrowserRouter>
@@ -163,6 +201,7 @@ const App = () => {
 							<Route path="/home" element={<HomepageView />} />
 							<Route path="/leaderboard" element={<LeaderboardView />} />
 							<Route path="/problemset" element={<ProblemsetView />} />
+							<Route path="/" element={<Navigate replace to="/home" />} />
 						</Route>
 					</Route>
 				</Routes>

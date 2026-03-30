@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAuth } from "../hooks/UseAuth";
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [currPage, setCurrPage] = useState('home');
   const navigate = useNavigate();
 
@@ -15,7 +15,7 @@ const Navbar = () => {
         <div className="flex items-center gap-4 shrink-0 pr-6 mr-6 border-r-4 border-primaryBlack h-full">
           <div className="flex items-center gap-3">
             <img
-              className="h-10 w-auto object-contain block shrink-0"
+              className="h-16 w-auto object-contain block shrink-0"
               src="/InternalContestLogo.svg"
               alt="ICLogo"
             />
@@ -71,7 +71,7 @@ const Navbar = () => {
         <div className="ml-auto text-right pr-8">
           <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest leading-none mb-1">Time Remaining</p>
           <span className="text-3xl font-mono font-black text-primaryBlack tabular-nums leading-none tracking-tighter">
-            {liveContestTime}
+            --:--:--
           </span>
         </div>
 
@@ -85,7 +85,7 @@ const Navbar = () => {
           </div>
           <button
             type="button"
-            onClick={onLogout}
+            onClick={logout}
             className="bg-primaryBlue text-white text-[10px] font-black px-6 py-3 rounded-xl border-2 border-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95"
           >
             Logout

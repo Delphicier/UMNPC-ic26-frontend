@@ -1,6 +1,6 @@
 export default function HomepageView() {
   return (
-    <div>Homepage</div>
+    <div className="text-black">Homepage <p>FAH</p></div>
   )
 }
 

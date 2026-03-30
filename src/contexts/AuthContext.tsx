@@ -62,10 +62,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const newUser: AuthUser = {
-        id: String(userData.id),
+        id: userData.id,
+        userid: userData.userid,
         username: userData.username,
-        fullname: userData.name || userData.username,
-        teamId: userData.team_id,
+        name: userData.name,
+        team: userData.team,
+        team_id: userData.team_id,
         token: authToken,
       };
 

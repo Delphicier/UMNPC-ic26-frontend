@@ -1,7 +1,5 @@
-import { useState, useRef } from 'react'
-import { buildApiResourceUrl } from '../utils/utils'
-
 const ProblemsetView = () => {
+  /*
   const [currProblemIdx, setCurrProblemIdx] = useState(0)
   const [activeTab, setActiveTab] = useState<'info' | 'submit'>('info')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -26,6 +24,7 @@ const ProblemsetView = () => {
       setSelectedFile(e.dataTransfer.files[0])
     }
   }
+    */
 
   return (
     <div>ProblemSet</div>

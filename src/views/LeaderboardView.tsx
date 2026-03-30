@@ -1,6 +1,6 @@
 export default function LeaderboardView() {
   return (
-    <div>Leaderboard</div>
+    <div className="text-black">Leaderboard</div>
   )
 }
 
