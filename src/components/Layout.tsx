@@ -9,16 +9,16 @@ interface LayoutProps {
 const BASE = import.meta.env.BASE_URL;
 
 const mediaPartners = [
-    { name: "ACES",                 file: "LOGO_ACES.png" },
-    { name: "CommFest",             file: "LOGO_COMMFEST.jpg" },
-    { name: "DISCO",                file: "LOGO_DISCO.png" },
-    { name: "Duta Anti Narkoba",    file: "LOGO_DutaAntiNarkoba.png" },
-    { name: "HIMSI",                file: "LOGO_HIMSI.png" },
-    { name: "HMIF",                 file: "LOGO_HMIF.png" },
-    { name: "Inforta",              file: "LOGO_INFORTA.png" },
-    { name: "J-Cafe",               file: "LOGO_JCAFE.png" },
-    { name: "Mister & Miss UMN",    file: "LOGO_MisterMiss.png" },
-    { name: "UMN Medical Center",   file: "LOGO_UMN_MEDICAL_CENTER.png" },
+    { name: "ACES", file: "LOGO_ACES.png" },
+    { name: "CommFest", file: "LOGO_COMMFEST.jpg" },
+    { name: "DISCO", file: "LOGO_DISCO.png" },
+    { name: "Duta Anti Narkoba", file: "LOGO_DutaAntiNarkoba.png" },
+    { name: "HIMSI", file: "LOGO_HIMSI.png" },
+    { name: "HMIF", file: "LOGO_HMIF.png" },
+    { name: "Inforta", file: "LOGO_INFORTA.png" },
+    { name: "J-Cafe", file: "LOGO_JCAFE.png" },
+    { name: "Mister & Miss UMN", file: "LOGO_MisterMiss.png" },
+    { name: "UMN Medical Center", file: "LOGO_UMN_MEDICAL_CENTER.png" },
 ];
 
 const Layout = ({ currentcontest }: LayoutProps) => {
