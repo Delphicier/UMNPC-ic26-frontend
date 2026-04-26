@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Scoreboard, Problems, ScoreboardProblem } from "../utils/types";
 
 interface LeaderboardViewProps {
@@ -51,6 +52,48 @@ const LeaderboardView = ({ scoreboard, problemset, teammap }: LeaderboardViewPro
     return "bg-transparent text-gray-400";
   };
 
+  const rankedRows = useMemo(() => {
+    const rows = scoreboard?.rows ?? [];
+
+    const sorted = [...rows].sort((a, b) => {
+      const solvedDiff = getSolvedCount(b) - getSolvedCount(a);
+      if (solvedDiff !== 0) {
+        return solvedDiff;
+      }
+
+      const timeDiff = getTotalTime(a) - getTotalTime(b);
+      if (timeDiff !== 0) {
+        return timeDiff;
+      }
+
+      const teamNameA = teammap.get(a.team_id) ?? a.team_id;
+      const teamNameB = teammap.get(b.team_id) ?? b.team_id;
+      return teamNameA.localeCompare(teamNameB);
+    });
+
+    let lastSolved: number | null = null;
+    let lastTime: number | null = null;
+    let lastRank = 0;
+
+    return sorted.map((row, index) => {
+      const solved = getSolvedCount(row);
+      const totalTime = getTotalTime(row);
+
+      if (solved !== lastSolved || totalTime !== lastTime) {
+        lastRank = index + 1;
+        lastSolved = solved;
+        lastTime = totalTime;
+      }
+
+      return {
+        row,
+        solved,
+        totalTime,
+        displayRank: lastRank,
+      };
+    });
+  }, [scoreboard, teammap]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <header className="mb-10 text-center">
@@ -82,19 +125,19 @@ const LeaderboardView = ({ scoreboard, problemset, teammap }: LeaderboardViewPro
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-slate-900">
-              {scoreboard?.rows.map((row) => (
+              {rankedRows.map(({ row, solved, totalTime, displayRank }) => (
                 <tr key={row.team_id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="p-4 text-center font-bold text-slate-900">{row.rank}</td>
+                  <td className="p-4 text-center font-bold text-slate-900">{displayRank}</td>
                   <td className="p-4 border-l-2 border-slate-900 font-semibold text-slate-800">
                     {teammap.get(row.team_id) || row.team_id}
                   </td>
                   <td className="p-4 text-center border-l-2 border-slate-900">
                     <span className="bg-slate-100 px-3 py-1 rounded-md text-sm font-black border border-slate-200">
-                      {getSolvedCount(row)}
+                      {solved}
                     </span>
                   </td>
                   <td className="p-4 text-center font-mono text-sm border-l-2 border-slate-900">
-                    {getTotalTime(row)}
+                    {totalTime}
                   </td>
                   {row.problems.map((p, idx) => (
                     <td key={idx} className="p-1 border-l-2 border-slate-900">
