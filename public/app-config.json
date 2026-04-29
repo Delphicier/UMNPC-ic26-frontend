@@ -1,5 +1,5 @@
 {
-	"apiBaseUrl": "/api/v4/",
+	"apiBaseUrl": "https://contest.ambalabus.my.id/domjudge/api/v4/",
 	"contestId": "",
 	"withCredentials": true,
 	"autoRefreshMs": 15000,
